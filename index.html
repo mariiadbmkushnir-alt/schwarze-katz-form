@@ -1,144 +1,504 @@
-// SCHWARZE KATZ - GOOGLE APPS SCRIPT (SPROSTР•РќРђ Р’Р•Р РЎР†РЇ)
-// Versendet Email-Angebote ohne PDF-Probleme
-// 
-// SETUP:
-// 1. https://script.google.com/ в†’ Neues Projekt
-// 2. Diesen Code einfГјgen
-// 3. Ctrl+S speichern
-// 4. "Deploy" в†’ "Web App" в†’ "Alle"
-// 5. URL kopieren
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schwarze Katz - Event Angebot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1F4E78 0%, #2E75B6 100%);
+            min-height: 100vh;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1F4E78 0%, #2E75B6 100%);
+            color: white;
+            padding: 20px;
+            margin: -20px -20px 20px -20px;
+            text-align: center;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group.two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        
+        .form-group.two-col .form-group {
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1F4E78;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2E75B6;
+            box-shadow: 0 0 0 3px rgba(46, 117, 182, 0.1);
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .checkbox-group,
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .checkbox-item,
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .checkbox-item input,
+        .radio-item input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .checkbox-item label,
+        .radio-item label {
+            margin-bottom: 0;
+            cursor: pointer;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: normal;
+            text-transform: capitalize;
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #2E75B6, transparent);
+            margin: 24px 0;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1F4E78;
+            margin: 20px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #E7F0F6;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 24px;
+        }
+        
+        button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+        
+        .btn-reset:hover {
+            background: #e8e8e8;
+        }
+        
+        .status-message {
+            padding: 14px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .status-message.show {
+            display: block;
+        }
+        
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-message.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(12, 84, 96, 0.2);
+            border-radius: 50%;
+            border-top-color: #0c5460;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .help-text {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                border-radius: 8px;
+            }
+            
+            .header {
+                padding: 15px;
+                margin: -15px -15px 15px -15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-submit {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SCHWARZE KATZ</h1>
+            <p>Schnell-Angebot erstellen</p>
+        </div>
 
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    
-    // Validierung
-    if (!data.kundenname || !data.kundenemail || !data.anlass || !data.datum) {
-      return ContentService.createTextOutput(JSON.stringify({
-        success: false,
-        error: 'Erforderliche Felder fehlen'
-      })).setMimeType(ContentService.MimeType.JSON);
-    }
+        <form id="eventForm">
+            <div id="statusMessage" class="status-message"></div>
 
-    // 1. In Google Sheets speichern
-    const offerId = saveToSheet(data);
+            <!-- Kundenangaben -->
+            <div class="section-title">👤 Kundenangaben</div>
+            
+            <div class="form-group">
+                <label for="kundenname">Kundenname <span class="required">*</span></label>
+                <input type="text" id="kundenname" name="kundenname" placeholder="z.B. Max Mustermann" required>
+            </div>
 
-    // 2. Email versenden
-    sendEmail(data, offerId);
+            <div class="form-group">
+                <label for="kundenemail">Email <span class="required">*</span></label>
+                <input type="email" id="kundenemail" name="kundenemail" placeholder="kunde@example.de" required>
+                <div class="help-text">Der Angebot wird an diese Email versendet</div>
+            </div>
 
-    return ContentService.createTextOutput(JSON.stringify({
-      success: true,
-      offerId: offerId,
-      message: 'Angebot erfolgreich erstellt und versendet!'
-    })).setMimeType(ContentService.MimeType.JSON);
+            <div class="form-group">
+                <label for="adresse">Adresse</label>
+                <input type="text" id="adresse" name="adresse" placeholder="Straße, Hausnummer, Stadt">
+            </div>
 
-  } catch (error) {
-    Logger.log('Fehler: ' + error.toString());
-    return ContentService.createTextOutput(JSON.stringify({
-      success: false,
-      error: error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
+            <div class="form-group">
+                <label for="telefon">Telefon</label>
+                <input type="text" id="telefon" name="telefon" placeholder="+49 123 45678">
+            </div>
 
-// Daten in Google Sheets speichern
-function saveToSheet(data) {
-  try {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    
-    let sheet = spreadsheet.getSheetByName('Angebote');
-    if (!sheet) {
-      sheet = spreadsheet.insertSheet('Angebote');
-      const headers = [
-        'Angebot-Nr', 'Datum erstellt', 'Kundenname', 'Email', 'Anlass', 
-        'Veranstaltungsdatum', 'Ort', 'Personen', 'Mindestumsatz', 
-        'Speisen', 'Vegetarier', 'Veganer', 'Zahlungsart', 'Status'
-      ];
-      sheet.appendRow(headers);
-    }
+            <!-- Veranstaltungsdetails -->
+            <div class="divider"></div>
+            <div class="section-title">📅 Veranstaltungsdetails</div>
 
-    const offerId = 'ANG-' + Utilities.formatDate(new Date(), 'GMT', 'yyyyMMdd') + '-' + 
-                    Math.floor(Math.random() * 9000 + 1000);
+            <div class="form-group">
+                <label for="anlass">Anlass <span class="required">*</span></label>
+                <input type="text" id="anlass" name="anlass" placeholder="z.B. Hochzeit, Firmenevent, Jubiläum" required>
+            </div>
 
-    const dateStr = new Date(data.datum).toLocaleDateString('de-DE', 
-      { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            <div class="form-group.two-col">
+                <div class="form-group">
+                    <label for="datum">Datum <span class="required">*</span></label>
+                    <input type="date" id="datum" name="datum" required>
+                </div>
+                <div class="form-group">
+                    <label for="uhrzeit">Uhrzeit</label>
+                    <input type="time" id="uhrzeit" name="uhrzeit">
+                </div>
+            </div>
 
-    sheet.appendRow([
-      offerId,
-      new Date().toLocaleString('de-DE'),
-      data.kundenname,
-      data.kundenemail,
-      data.anlass,
-      dateStr,
-      data.ort,
-      data.personenanzahl,
-      'в‚¬ ' + parseInt(data.mindestumsatz).toLocaleString('de-DE'),
-      data.speisen,
-      data.vegetarier,
-      data.veganer,
-      data.zahlungsart,
-      'Versendet'
-    ]);
+            <div class="form-group">
+                <label for="ort">Ort/Location <span class="required">*</span></label>
+                <input type="text" id="ort" name="ort" placeholder="Restaurant, Hotel, Privatadresse, etc." required>
+            </div>
 
-    Logger.log('Daten in Sheets gespeichert: ' + offerId);
-    return offerId;
-  } catch (error) {
-    Logger.log('Fehler saveToSheet: ' + error);
-    throw error;
-  }
-}
+            <div class="form-group.two-col">
+                <div class="form-group">
+                    <label for="personenanzahl">Personen <span class="required">*</span></label>
+                    <input type="number" id="personenanzahl" name="personenanzahl" min="1" value="50" required>
+                </div>
+                <div class="form-group">
+                    <label for="mindestumsatz">Mindestumsatz (€)</label>
+                    <input type="number" id="mindestumsatz" name="mindestumsatz" value="2000" min="0">
+                </div>
+            </div>
 
-// Email versenden
-function sendEmail(data, offerId) {
-  try {
-    const dateStr = new Date(data.datum).toLocaleDateString('de-DE', 
-      { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            <!-- Speisenangebot -->
+            <div class="divider"></div>
+            <div class="section-title">🍽️ Speisenangebot</div>
 
-    const emailBody = `Sehr geehrte(r) ${data.kundenname},
+            <div class="form-group">
+                <label>Art der Verpflegung <span class="required">*</span></label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="menu" name="speisen" value="menu">
+                        <label for="menu">Menü</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="flying" name="speisen" value="flying">
+                        <label for="flying">Flying (Cocktail-Party)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="buffet" name="speisen" value="buffet">
+                        <label for="buffet">Buffet</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="alacarte" name="speisen" value="alacarte">
+                        <label for="alacarte">À la carte</label>
+                    </div>
+                </div>
+            </div>
 
-vielen Dank fГјr Ihre Anfrage zur Veranstaltung "${data.anlass}" am ${dateStr}.
+            <div class="form-group.two-col">
+                <div class="form-group">
+                    <label for="vegetarier">Vegetarier</label>
+                    <input type="number" id="vegetarier" name="vegetarier" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="veganer">Veganer</label>
+                    <input type="number" id="veganer" name="veganer" value="0" min="0">
+                </div>
+            </div>
 
-Hier sind die Details Ihres Angebots:
+            <div class="form-group">
+                <label for="spezialwunsche">Allergien/Spezialwünsche</label>
+                <textarea id="spezialwunsche" name="spezialwunsche" placeholder="z.B. Nussallergie, glutenfrei, laktosefrei..."></textarea>
+            </div>
 
-в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ
-ANGEBOTSNUMMER: ${offerId}
-в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ
+            <!-- Zahlungsbedingungen -->
+            <div class="divider"></div>
+            <div class="section-title">💰 Zahlungsbedingungen</div>
 
-рџ“… VERANSTALTUNGSDETAILS
-Anlass: ${data.anlass}
-Datum: ${dateStr}
-${data.uhrzeit ? 'Uhrzeit: ' + data.uhrzeit + ' Uhr\n' : ''}Ort: ${data.ort}
-Anzahl Personen: ${data.personenanzahl}
+            <div class="form-group">
+                <label for="zahlungsart">Zahlungsart</label>
+                <select id="zahlungsart" name="zahlungsart">
+                    <option value="Komplette Bezahlung im Voraus">Komplette Bezahlung im Voraus</option>
+                    <option value="50% Anzahlung, 50% nach Event">50% Anzahlung, 50% nach Event</option>
+                    <option value="Gesamtzahlung nach Event">Gesamtzahlung nach Event</option>
+                    <option value="Nach Absprache">Nach Absprache</option>
+                </select>
+            </div>
 
-рџЌЅпёЏ SPEISENANGEBOT
-Art: ${data.speisen}
-Vegetarier: ${data.vegetarier}
-Veganer: ${data.veganer}
-${data.spezialwunsche ? 'Allergien/WГјnsche: ' + data.spezialwunsche + '\n' : ''}
-рџ’° GESCHГ„FTSBEDINGUNGEN
-Mindestumsatz: в‚¬ ${parseInt(data.mindestumsatz).toLocaleString('de-DE')}
-Zahlungsart: ${data.zahlungsart}
+            <!-- Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn-submit">📧 Angebot senden</button>
+                <button type="reset" class="btn-reset">Löschen</button>
+            </div>
+        </form>
+    </div>
 
-в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ
+    <script>
+        const form = document.getElementById('eventForm');
+        const statusMessage = document.getElementById('statusMessage');
 
-Bitte bestГ¤tigen Sie die Reservierung bei Interesse.
-FГјr Fragen stehen wir Ihnen gerne zur VerfГјgung.
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-Mit freundlichen GrГјГџen,
+            // Show loading message
+            showStatus('loading', '<span class="loader"></span> Angebot wird erstellt und versendet...');
 
-SCHWARZE KATZ
-Gastronomie & Events`;
+            try {
+                // Collect form data
+                const formData = new FormData(form);
+                const data = {
+                    kundenname: formData.get('kundenname'),
+                    kundenemail: formData.get('kundenemail'),
+                    adresse: formData.get('adresse'),
+                    telefon: formData.get('telefon'),
+                    anlass: formData.get('anlass'),
+                    datum: formData.get('datum'),
+                    uhrzeit: formData.get('uhrzeit'),
+                    ort: formData.get('ort'),
+                    personenanzahl: formData.get('personenanzahl'),
+                    mindestumsatz: formData.get('mindestumsatz'),
+                    speisen: Array.from(document.querySelectorAll('input[name="speisen"]:checked')).map(el => el.value).join(', ') || 'nicht angegeben',
+                    vegetarier: formData.get('vegetarier'),
+                    veganer: formData.get('veganer'),
+                    spezialwunsche: formData.get('spezialwunsche'),
+                    zahlungsart: formData.get('zahlungsart'),
+                    timestamp: new Date().toISOString()
+                };
 
-    MailApp.sendEmail(
-      data.kundenemail,
-      'Ihr Angebot von Schwarze Katz - ' + data.anlass,
-      emailBody,
-      { name: 'SCHWARZE KATZ' }
-    );
+                // Send to Google Apps Script
+                const response = await fetch('https://script.google.com/macros/s/AKfycbxMJ-7TG_Vp7hgxlpHWKbXdWJe4OCX6Ici7fryHahM2SGQY-_VmI6OSNfaWR_nL7LcgOQ/exec', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-    Logger.log('Email versendet an: ' + data.kundenemail);
-  } catch (error) {
-    Logger.log('Fehler beim Email-Versand: ' + error);
-    throw error;
-  }
-}
+                if (response.ok) {
+                    showStatus('success', '✓ Angebot erfolgreich erstellt und an ' + data.kundenemail + ' versendet!');
+                    form.reset();
+                    
+                    // Auto-hide success message after 5 seconds
+                    setTimeout(() => {
+                        statusMessage.classList.remove('show');
+                    }, 5000);
+                } else {
+                    throw new Error('Fehler beim Versenden');
+                }
+            } catch (error) {
+                showStatus('error', '✗ Fehler: ' + error.message + '. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.');
+            }
+        });
+
+        function showStatus(type, message) {
+            statusMessage.className = `status-message ${type} show`;
+            statusMessage.innerHTML = message;
+            statusMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Format date input
+        const dateInput = document.getElementById('datum');
+        dateInput.addEventListener('change', function() {
+            if (this.value) {
+                const date = new Date(this.value + 'T00:00:00');
+                console.log('Selected date:', date);
+            }
+        });
+    </script>
+</body>
+</html>
